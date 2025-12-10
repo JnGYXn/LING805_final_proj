@@ -1,31 +1,43 @@
 import requests
 import pandas as pd
-from praw_rec import reddit
+import praw
 from praw.models import MoreComments
 
+# Read Reddit API credentials from external files
+with open ("client_secret.txt", "r") as file1, open ("password.txt", "r") as file2:
+    CLIENT_SECRET = file1.read().strip()
+    PASSWORD = file2.read().strip()
 
+reddit = praw.Reddit(
+    client_id="Edymr3QzbizFwCJCblYtjQ",
+    client_secret=CLIENT_SECRET,
+    password=PASSWORD,
+    user_agent="python:reddit_data_collector:1.0 (by /u/No_Speech4672)",
+    username="No_Speech4672",
+)
 
+print(reddit.user.me())
+
+# Access r/Rednote
 Rednote = reddit.subreddit("Rednote")
 
 # Collect new posts from r/Rednote
-
 posts = []
 for submission in Rednote.new(limit=None):
     posts.append({
         "Title": submission.title, # get post titles
         "Content": submission.selftext, # get post content
-        "Tokens" : len((submission.title + " " + submission.selftext).split()) # get token count
+        "Token_count" : len((submission.title + " " + submission.selftext).split()) # get token count
     }) 
 
-df_posts = pd.DataFrame(posts, columns = ["Title", "Content", "Tokens"])
+df_posts = pd.DataFrame(posts, columns = ["Title", "Content", "Token_count"])
 print("Total posts collected:", len(df_posts))
-print("Total tokens in the posts collected:", df_posts['Tokens'].sum())
-df_posts.to_csv("rednote_new_all.csv", index=False, encoding="utf-8")
+print("Total tokens in the posts collected:", df_posts['Token_count'].sum())
+df_posts.to_csv("rednote_new_all.csv", index=False, encoding="utf-8-sig")
 
 
 
 # Collect comments from r/Rednote
-
 comments = []
 submissions = [
     ("Post_1_as_a_chinese_user_some_advices", reddit.submission(id='1i1k0fq')), # https://www.reddit.com/r/rednote/comments/1i1k0fq/as_a_chinese_user_some_advices_and_cultural/
@@ -38,13 +50,21 @@ for name, submission in submissions:
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
         comments.append ({
-            "Comment_id": comment.id,
-            "Comments": comment.body,
             "Score": comment.score,
+            "Content": comment.body,
             "Token_count": len(comment.body.split())
         })
     print(f"Total comments from {name}: {len(submission.comments.list())}")
 
-df_comments = pd.DataFrame(comments, columns = ["Comment_id", "Comments", "Score", "Token_count"])
+df_comments = pd.DataFrame(comments, columns = ["Score", "Content", "Token_count"])
 print ("Total tokens in the comments collected:", df_comments['Token_count'].sum())
-df_comments.to_csv("reddit_comments.csv", index=False, encoding="utf-8")
+df_comments.to_csv("reddit_comments.csv", index=False, encoding="utf-8-sig")
+
+df_merged = pd.concat([df_posts, df_comments], axis=0)
+df_merged.to_csv("merged_data.csv", index=False, encoding="utf-8-sig")
+
+# save comments from 1st submission to a text file
+name, submission = submissions[0]
+first_comment_body = submission.comments.list()[0].body
+with open("first_comment.txt", "w", encoding="utf-8") as f:
+    f.write(first_comment_body)
