@@ -6,8 +6,8 @@ import stanza
 
 # normalization: punct, urls, emoji, whtespaces
 def _normalize_text(text: str, encoding="utf-8-sig") -> str:
-  punct = re.compile (r'[' + re.escape(string.punctuation) + r'“”‘’—…]+')
-  urls = re.compile(r'https?://\S+|www\.\S+', flags=re.IGNORECASE)
+  punct = re.compile (r'[' + re.escape(string.punctuation) + r'“”‘’—，。、《》~{}]+')
+  urls = re.compile(r'https?://\S+|www\.\S+', flags=0)
   emoji = re.compile( '['
     "\U0001F600-\U0001F64F"  # emoticons
     "\U0001F300-\U0001F5FF"  # symbols & pictographs
@@ -18,7 +18,6 @@ def _normalize_text(text: str, encoding="utf-8-sig") -> str:
     "\U0001FA70-\U0001FAFF"  # extended symbols
     ']+')
 
-  text = re.sub(r"\s+", " ", text)
   text = punct.sub (r" ", text)
   text = urls.sub(r" ", text)
   text = emoji.sub(r" ", text)
@@ -27,13 +26,8 @@ def _normalize_text(text: str, encoding="utf-8-sig") -> str:
 
 
 # language classification & parsing & tagging
-stanza.download('zh')
-stanza.download('en')
 
-nlp_zh = stanza.Pipeline(lang='zh', processors='tokenize,pos', use_gpu=False)
-nlp_en = stanza.Pipeline(lang='en', processors='tokenize,pos', use_gpu=False)
-
-CHIN_re = re.compile(r"[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]") # Unified Ideographs (main Chinese block), Extension A, Compatibility Ideographs
+CHIN_re = re.compile(r"[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]") # Chinese character ranges
 
 def split_mixed_by_script(text: str) -> List[Tuple[str, str]]:
     """
@@ -64,7 +58,14 @@ def tag_mixed_text(text: str) -> pd.DataFrame:
     Takes a mixed Chinese-English text and returns a DataFrame with columns:
     token, upos, xpos (if available), lemma (if available), lang
     """
+    stanza.download('zh')
+    stanza.download('en')
+
+    nlp_zh = stanza.Pipeline(lang='zh', processors='tokenize,pos', use_gpu=False)
+    nlp_en = stanza.Pipeline(lang='en', processors='tokenize,pos', use_gpu=False)
+    
     rows = []
+    runs = _normalize_text(text)
     runs = split_mixed_by_script(text)
 
     for chunk, label in runs:
@@ -92,7 +93,7 @@ def tag_mixed_text(text: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    sample_text = "今天很闲 but the weather is 很 bad。我 don't wanna go out 😂."
+    sample_text = "今天很闲 but the weather is 很 bad。我 don't want to go out 😂."
 
     cleaned_text = _normalize_text(sample_text)
     print("Normalized text:")

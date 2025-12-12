@@ -5,21 +5,31 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
-# the merged data is too big for stanza to handle at once, so only use comments for analysis
+# the merged data is too big for stanza to handle at once
 df = pd.read_csv("reddit_comments.csv", encoding="utf-8-sig")
 df = df.head(100)
 text = " ".join(df["Content"].astype(str))
-
-#with open("first_comment.txt", "r", encoding="utf-8-sig") as f:
-#    text = f.read()
 
 text = _normalize_text(text)
 df_tagged = tag_mixed_text(text)
 print("Tagged DataFrame:")
 print(df_tagged.head())
 
+#freq_df = frequency_list (df_tagged, token_column="token", field="lemma", lang_filter=None)
+#print("Frequency DataFrame:")   
+#print(freq_df.head(20)) 
+
+#df_tagged["lemma_clean"] = (
+ #   df_tagged["lemma"]
+  #  .fillna(df_tagged["token"])
+   # .astype(str)
+    #.str.lower()
+#)
+
+freq_df = frequency_list (df_tagged["token"])
+freq_df.columns = ["item", "frequency"]
+
 # visualize - wordcloud
-freq_df = frequency_list(df_tagged, token_column="token", field="lemma", lang_filter=None)
 freq_dict = dict(zip(freq_df["item"], freq_df["frequency"]))
 
 wordcloud = WordCloud(
@@ -41,7 +51,7 @@ plt.figure(figsize=(10, 8))
 sns.barplot(
     data=top_lemma,
     x="frequency",
-    y="lemma",
+    y="item",
     palette="viridis"
 )
 
