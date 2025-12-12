@@ -1,12 +1,12 @@
 import pandas as pd
 import re
 import string
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 import stanza
 
 # normalization: punct, urls, emoji, whtespaces
 def _normalize_text(text: str, encoding="utf-8-sig") -> str:
-  punct = re.compile (r'[' + re.escape(string.punctuation) + r'“”‘’—，。、《》~{}]+')
+  punct = re.compile (r'[' + re.escape(string.punctuation) + r'“”‘’—，。、《》~{}%：；？]+')
   urls = re.compile(r'https?://\S+|www\.\S+', flags=0)
   emoji = re.compile( '['
     "\U0001F600-\U0001F64F"  # emoticons
