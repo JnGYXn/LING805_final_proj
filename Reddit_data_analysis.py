@@ -1,7 +1,6 @@
 import pandas as pd
 from collections import Counter
 import nltk
-nltk.download('stopwords')
 from nltk.corpus import stopwords
 from Reddit_data_cleaning import tag_mixed_text
 from wordcloud import WordCloud
