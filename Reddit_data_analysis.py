@@ -3,6 +3,9 @@ from collections import Counter
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
+from Reddit_data_cleaning import tag_mixed_text
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 
 
@@ -39,15 +42,13 @@ def frequency_list(
     stopwords_zh = set(stopwords.words("chinese"))
 
     for _, row in df.iterrows():
-        tokens = row[token_column]
-        for tok in tokens:
-            if row["lang"] == "en" and tok.get("lemma") in stopwords_en:
+        for tok in row[token_column].split():
+            if row["lang"] == "en" and tok in stopwords_en:
                 continue
-            if row["lang"] == "zh" and tok.get("lemma") in stopwords_zh:
+            if row["lang"] == "zh" and tok in stopwords_zh:
                 continue
-            value = tok.get(field, None) if isinstance(tok, dict) else tok
-            if value:
-                counter[value] += 1
+            if tok:
+                counter[tok] += 1
 
     # Convert to DataFrame
     freq_df = (
@@ -58,24 +59,25 @@ def frequency_list(
     return freq_df
 
 if __name__ == "__main__":  
-    # Example usage
-    data = {
-        "lang": ["en", "en", "en", "zh", "zh", "zh"],
-        "token": [
-            [{"text": "Hello"}, {"text":"world"}],
-            [{"text": "Hello"}, {"text": "everyone"}],
-            [{"text": "the"}, {"text": "is"}],
-            [{"text": "你好"}, {"text": "世界"}],
-            [{"text": "你好"}, {"text": "朋友"}],
-            [{"text": "的"}, {"text": "是"}]
-        ]
-    }
-    df = pd.DataFrame(data)
+    
+    df = pd.read_csv("reddit_comments.csv", encoding="utf-8-sig")
+    df = df.head(100)
+    text = " ".join(df["Content"].astype(str))
+    df_tagged_text = tag_mixed_text(text)
+    freq_list = frequency_list(df_tagged_text, token_column="token", lang_filter=None)
+    print("Frequency List:")    
+    print(freq_list.head(20))
 
-    freq_en = frequency_list(df, token_column="token", lang_filter="en")
-    print("English Frequency List:")
-    print(freq_en)
+    freq_dict = dict(zip(freq_list["item"], freq_list["frequency"]))
 
-    freq_zh = frequency_list(df, token_column="token", lang_filter="zh")
-    print("\nChinese Frequency List:")
-    print(freq_zh)
+    wordcloud = WordCloud(
+    width=1600,
+    height=800,
+    background_color="white",
+    colormap="viridis"
+    ).generate_from_frequencies(freq_dict)
+
+    plt.figure(figsize=(16, 8))
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()

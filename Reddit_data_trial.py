@@ -1,6 +1,6 @@
 import pandas as pd
-from Reddit_data_cleaning import _normalize_text, tag_mixed_text, split_mixed_by_script
-from Reddit_data_analysis import frequency_list
+from Reddit_data_cleaning import tag_mixed_text
+from frequency_list import frequency_list
 import seaborn as sns
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
@@ -10,10 +10,9 @@ df = pd.read_csv("reddit_comments.csv", encoding="utf-8-sig")
 df = df.head(100)
 text = " ".join(df["Content"].astype(str))
 
-text = _normalize_text(text)
-df_tagged = tag_mixed_text(text)
+df_tagged_text = tag_mixed_text(text)
 print("Tagged DataFrame:")
-print(df_tagged.head())
+print(df_tagged_text.head())
 
 #freq_df = frequency_list (df_tagged, token_column="token", field="lemma", lang_filter=None)
 #print("Frequency DataFrame:")   
@@ -26,7 +25,7 @@ print(df_tagged.head())
     #.str.lower()
 #)
 
-freq_df = frequency_list (df_tagged["token"])
+freq_df = frequency_list (df_tagged_text, token_column="token", lang_filter=None)
 freq_df.columns = ["item", "frequency"]
 
 # visualize - wordcloud
@@ -42,21 +41,4 @@ wordcloud = WordCloud(
 plt.figure(figsize=(16, 8))
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
-plt.show()
-
-# visualize - barplot
-top_lemma = freq_df.head(20)
-
-plt.figure(figsize=(10, 8))
-sns.barplot(
-    data=top_lemma,
-    x="frequency",
-    y="item",
-    palette="viridis"
-)
-
-plt.title("Top 20 Most Frequent Lemmas")
-plt.xlabel("Frequency")
-plt.ylabel("Lemma")
-plt.tight_layout()
 plt.show()

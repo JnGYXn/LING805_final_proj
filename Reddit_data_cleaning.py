@@ -61,12 +61,11 @@ def tag_mixed_text(text: str) -> pd.DataFrame:
     stanza.download('zh')
     stanza.download('en')
 
-    nlp_zh = stanza.Pipeline(lang='zh', processors='tokenize,pos', use_gpu=False)
-    nlp_en = stanza.Pipeline(lang='en', processors='tokenize,pos', use_gpu=False)
+    nlp_zh = stanza.Pipeline(lang='zh', processors='tokenize,pos,lemma', use_gpu=False)
+    nlp_en = stanza.Pipeline(lang='en', processors='tokenize,pos,lemma', use_gpu=False)
     
     rows = []
-    runs = _normalize_text(text)
-    runs = split_mixed_by_script(text)
+    runs = split_mixed_by_script(_normalize_text(text))
 
     for chunk, label in runs:
         if label == 'CHIN':
@@ -103,6 +102,6 @@ if __name__ == "__main__":
     print("Segmented runs:")
     print(runs)
 
-    df_tagged_text = tag_mixed_text(cleaned_text)
+    df_tagged_text = tag_mixed_text(sample_text)
     print("\nPOS tagged output:")
     print(df_tagged_text)
