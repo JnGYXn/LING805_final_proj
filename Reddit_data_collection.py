@@ -60,7 +60,7 @@ df_comments = pd.DataFrame(comments, columns = ["Score", "Content", "Token_count
 print ("Total tokens in the comments collected:", df_comments['Token_count'].sum())
 df_comments.to_csv("reddit_comments.csv", index=False, encoding="utf-8-sig")
 
-df_merged = pd.concat([df_posts, df_comments], axis=0)
+df_merged = pd.concat([df_posts, df_comments], axis=0) # add vertically
 df_merged.to_csv("merged_data.csv", index=False, encoding="utf-8-sig")
 
 # save comments from 1st submission to a text file
