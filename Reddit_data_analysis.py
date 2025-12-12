@@ -47,8 +47,7 @@ def frequency_list(
                 continue
             if row["lang"] == "zh" and tok in stopwords_zh:
                 continue
-            if tok:
-                counter[tok] += 1
+            counter[tok] += 1
 
     # Convert to DataFrame
     freq_df = (

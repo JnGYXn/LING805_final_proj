@@ -3,7 +3,7 @@ import pandas as pd
 import praw
 from praw.models import MoreComments
 
-# Read Reddit API credentials from external files
+# Read Reddit API credentials
 with open ("client_secret.txt", "r") as file1, open ("password.txt", "r") as file2:
     CLIENT_SECRET = file1.read().strip()
     PASSWORD = file2.read().strip()
@@ -62,9 +62,3 @@ df_comments.to_csv("reddit_comments.csv", index=False, encoding="utf-8-sig")
 
 df_merged = pd.concat([df_posts, df_comments], axis=0) # add vertically
 df_merged.to_csv("merged_data.csv", index=False, encoding="utf-8-sig")
-
-# save comments from 1st submission to a text file
-name, submission = submissions[0]
-first_comment_body = submission.comments.list()[0].body
-with open("first_comment.txt", "w", encoding="utf-8") as f:
-    f.write(first_comment_body)
