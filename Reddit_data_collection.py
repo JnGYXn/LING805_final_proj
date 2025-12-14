@@ -25,12 +25,13 @@ Rednote = reddit.subreddit("Rednote")
 posts = []
 for submission in Rednote.new(limit=None):
     posts.append({
+        "Data_type": "Post",
         "Title": submission.title, # get post titles
         "Content": submission.selftext, # get post content
         "Token_count" : len((submission.title + " " + submission.selftext).split()) # get token count
     }) 
 
-df_posts = pd.DataFrame(posts, columns = ["Title", "Content", "Token_count"])
+df_posts = pd.DataFrame(posts, columns = ["Data_type", "Title", "Content", "Token_count"])
 print("Total posts collected:", len(df_posts))
 print("Total tokens in the posts collected:", df_posts['Token_count'].sum())
 df_posts.to_csv("rednote_new_all.csv", index=False, encoding="utf-8-sig")
@@ -50,13 +51,14 @@ for name, submission in submissions:
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
         comments.append ({
+            "Data_type": "Comment",
             "Score": comment.score,
             "Content": comment.body,
             "Token_count": len(comment.body.split())
         })
     print(f"Total comments from {name}: {len(submission.comments.list())}")
 
-df_comments = pd.DataFrame(comments, columns = ["Score", "Content", "Token_count"])
+df_comments = pd.DataFrame(comments, columns = ["Data_type", "Score", "Content", "Token_count"])
 print ("Total tokens in the comments collected:", df_comments['Token_count'].sum())
 df_comments.to_csv("reddit_comments.csv", index=False, encoding="utf-8-sig")
 
